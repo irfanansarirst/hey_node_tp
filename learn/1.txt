@@ -1,0 +1,217 @@
+Excellent 👌 Let’s now go through § 2.5 Closures and Scope, § 2.6 Prototypes and Classes, and § 2.7 Array and Object Methods in detail with examples.
+
+
+
+ 🔹 § 2.5 Closures and Scope
+
+ 1. Scope
+
+* Global Scope → Variables accessible everywhere.
+* Function Scope → Variables inside a function are local to it.
+* Block Scope (`let`, `const`) → Variables limited to `{ }`.
+
+js
+let x = 10; // global
+
+function test() {
+  let y = 20; // function scope
+  if (true) {
+    let z = 30; // block scope
+    console.log(x, y, z); // 10 20 30
+  }
+}
+
+
+
+
+ 2. Closure
+
+A closure is created when a function remembers variables from its outer scope, even after the outer function has finished.
+
+js
+function outer() {
+  let counter = 0;
+  return function inner() {
+    counter++;
+    return counter;
+  };
+}
+
+const increment = outer();
+console.log(increment()); // 1
+console.log(increment()); // 2
+console.log(increment()); // 3
+
+
+👉 Use cases of closures in Node.js:
+
+* Data privacy (encapsulation).
+* Function factories.
+* Maintaining state across function calls.
+
+
+
+ 🔹 § 2.6 Prototypes and Classes
+
+ 1. Prototypes
+
+* In JavaScript, every object inherits from another object called its prototype.
+* Functions in JavaScript are special objects that have a `prototype` property.
+
+js
+function Person(name) {
+  this.name = name;
+}
+Person.prototype.greet = function () {
+  console.log(`Hello, I'm ${this.name}`);
+};
+
+const p1 = new Person("Alice");
+p1.greet(); // Hello, I'm Alice
+
+
+👉 Useful in Node.js when extending built-in objects or creating reusable methods.
+
+
+
+ 2. Classes (ES6)
+
+Classes are syntactic sugar over prototypes.
+
+js
+class Person {
+  constructor(name) {
+    this.name = name;
+  }
+  greet() {
+    console.log(`Hi, I'm ${this.name}`);
+  }
+}
+
+const p2 = new Person("Bob");
+p2.greet(); // Hi, I'm Bob
+
+
+
+
+ 3. Inheritance with Classes
+
+js
+class Animal {
+  speak() {
+    console.log("Some sound...");
+  }
+}
+class Dog extends Animal {
+  speak() {
+    console.log("Woof!");
+  }
+}
+const dog = new Dog();
+dog.speak(); // Woof!
+
+
+👉 Node.js uses prototypes/classes extensively (e.g., `EventEmitter`, `Streams`).
+
+
+
+ 🔹 § 2.7 Array and Object Methods
+
+These modern methods simplify working with collections and objects in Node.js.
+
+
+
+ 1. Array Methods
+
+ `.forEach()`
+
+Iterates over each element.
+
+js
+[1, 2, 3].forEach(num => console.log(num));
+
+
+ `.map()`
+
+Creates a new array with transformed elements.
+
+js
+const doubled = [1, 2, 3].map(n => n * 2);
+console.log(doubled); // [2, 4, 6]
+
+
+ `.filter()`
+
+Filters based on condition.
+
+js
+const evens = [1, 2, 3, 4].filter(n => n % 2 === 0);
+console.log(evens); // [2, 4]
+
+
+ `.reduce()`
+
+Reduces array to a single value.
+
+js
+const sum = [1, 2, 3, 4].reduce((acc, n) => acc + n, 0);
+console.log(sum); // 10
+
+
+ `.find()`
+
+Returns the first matching element.
+
+js
+const user = [{id:1},{id:2}].find(u => u.id === 2);
+console.log(user); // {id:2}
+
+
+ `.some()` and `.every()`
+
+* `.some()` → checks if any element matches.
+* `.every()` → checks if all elements match.
+
+js
+console.log([1, 2, 3].some(n => n > 2));  // true
+console.log([1, 2, 3].every(n => n > 0)); // true
+
+
+
+
+ 2. Object Methods
+
+ `Object.keys()`, `Object.values()`, `Object.entries()`
+
+js
+const user = { name: "Alice", age: 25 };
+console.log(Object.keys(user));   // ["name", "age"]
+console.log(Object.values(user)); // ["Alice", 25]
+console.log(Object.entries(user));// [["name","Alice"],["age",25]]
+
+
+ Object Destructuring
+
+js
+const { name, age } = user;
+console.log(name, age);
+
+
+ Object Spread
+
+js
+const updated = { ...user, country: "India" };
+console.log(updated);
+
+
+
+
+  Summary
+
+* § 2.5 Closures and Scope → Closures allow functions to “remember” variables, useful for encapsulation and state.
+* § 2.6 Prototypes and Classes → Prototypes are the foundation of inheritance in JS; classes make it easier to work with.
+* § 2.7 Array & Object Methods → `map`, `filter`, `reduce`, destructuring, and spread make data manipulation in Node.js concise and powerful.
+
+
+
+👉 Would you like me to also prepare a comparison cheat sheet (with a table) for Callbacks vs Closures vs Classes vs Array Methods so you can revise these topics quickly?

@@ -1,0 +1,1 @@
+export const hum = (a,b) => a+b
