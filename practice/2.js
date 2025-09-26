@@ -95,7 +95,6 @@ console.log(copy)
 
 
 import fs from "fs";
-import { error } from "console";
 // console.log(fs)
 fs.readFile("1.txt","utf-8",(err,data)=>{
     console.log(data)
@@ -108,4 +107,3 @@ console.log(process.version)
 console.log(process.platform)
 console.log(process.cwd())
 
-import fs from 'fs/promises';
