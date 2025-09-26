@@ -1,3 +1,6 @@
+import { title } from "process";
+import { json, text } from "stream/consumers";
+
 function person(name){
     this.name=name;
 }
@@ -66,3 +69,43 @@ for(let i = 0; i<arrOfObj.length; i++){
 const {name,age} = obj1;
 console.log(name)
 console.log(age)
+
+const reg1 = /irfan/;
+const reg2 = new RegExp("irfan");
+
+console.log("regex",reg1.exec(text))
+
+const emailRegEx = /^[\w.-]+@[a-zA-Z]+\.[a-zA-Z]{2,}$/;
+//this is the way of converting the json string into the js object
+const jsonString = '{"name":"alice","age":25,"address":"xyz","arr":[1,2,3,4,5,6,7,8,9]}'
+const userData = JSON.parse(jsonString)
+console.log("json string to json")
+console.log(userData)
+//now this is the way of converting the js object into the json string 
+const obj2 = {name:"don",title:"shanshahe-e-hind"}
+const jsonData = JSON.stringify(obj2,null,1)
+console.log(jsonData)
+
+const org = {
+    name:"md",
+    skills:['node','js'],
+}
+const copy = JSON.parse(JSON.stringify(org))
+console.log(copy)
+
+
+import fs from "fs";
+import { error } from "console";
+// console.log(fs)
+fs.readFile("1.txt","utf-8",(err,data)=>{
+    console.log(data)
+    console.log("file read done")
+})
+console.log("im running without waiting")
+
+console.log("This is process id",process.pid)
+console.log(process.version)
+console.log(process.platform)
+console.log(process.cwd())
+
+import fs from 'fs/promises';
