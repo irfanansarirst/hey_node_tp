@@ -1,6 +1,5 @@
 import fs, { write } from "fs";
 import { Readable } from "stream";
-import { ReadStream } from "tty";
 const readStream = fs.createReadStream("./1.txt","utf8");
 readStream.on("data",(chunk)=>{
     console.log("Recieved chunk : ",chunk.length)
