@@ -33,3 +33,9 @@ const readStream = fs.createReadStream("./1.txt",'utf8');
 readStream.on("data",(chunk)=>{
     console.log("chunk : ",chunk)
 })
+
+// fs.mkdir("newDir",(err)=>{
+//     if(err) throw err
+//     console.log("directry created!")
+// })
+// fs.mkdirSync("ahe")

@@ -1,173 +1,203 @@
-Great 👍 Let’s go through Chapter 5: File System in Node.js step by step with real-world engineering details and code examples.
+ § 7.4 Pipe and Pipeline Methods
+
+ 🔹 `stream.pipe()`
+
+ The simplest way to connect streams.
+ It takes the output of a readable stream and passes it into a writable stream automatically.
+ Handles backpressure (pauses reading if writing is slower).
+
+Example: Copy a file using `pipe()`
+
+```js
+const fs = require('fs');
+
+// Create readable & writable streams
+const readStream = fs.createReadStream('input.txt');
+const writeStream = fs.createWriteStream('output.txt');
+
+// Pipe data directly
+readStream.pipe(writeStream);
+```
+
+👉 Equivalent to reading chunks manually and writing them, but much cleaner.
 
 ---
 
- ⚡ Chapter 5: File System in Node.js
+ 🔹 `stream.pipeline()`
 
-The `fs` module in Node.js provides an API to interact with the file system (read, write, update, delete). It supports both synchronous and asynchronous operations.
+ Introduced in Node.js v10.
+ Like `pipe()`, but with better error handling.
+ Ensures that if any stream in the chain fails, the whole pipeline ends gracefully.
+
+Example: Compress a file with pipeline
+
+```js
+const fs = require('fs');
+const zlib = require('zlib');
+const { pipeline } = require('stream');
+
+pipeline(
+  fs.createReadStream('input.txt'),
+  zlib.createGzip(),                   // transform stream
+  fs.createWriteStream('input.txt.gz'),
+  (err) => {
+    if (err) {
+      console.error('Pipeline failed:', err);
+    } else {
+      console.log('Pipeline completed successfully');
+    }
+  }
+);
+```
+
+✅ When to use what?
+
+ Use `pipe()` for simple cases.
+ Use `pipeline()` for production code where error handling is critical.
 
 ---
 
- 🔹 § 5.1 fs Module Introduction
+ § 7.5 Stream Events and Error Handling
 
- The `fs` (File System) module is a core Node.js module (no installation needed).
- You import it like this:
+Streams are built on EventEmitter, so they emit events.
 
-js
-const fs = require("fs");
+ 🔹 Common Events
 
+ For Readable Streams
 
- Capabilities:
+ `data` → emitted when a chunk of data is available
+ `end` → no more data left
+ `error` → an error occurred
+ `close` → stream is closed
 
-   Create, read, update, delete files.
-   Work with directories.
-   Stream large files efficiently.
+```js
+const fs = require('fs');
+const readStream = fs.createReadStream('input.txt', 'utf8');
 
-Example – checking if a file exists:
+readStream.on('data', (chunk) => {
+  console.log('Received chunk:', chunk.length);
+});
 
-js
-const fs = require("fs");
+readStream.on('end', () => {
+  console.log('Reading finished');
+});
 
-if (fs.existsSync("example.txt")) {
-  console.log("File exists!");
-} else {
-  console.log("File does not exist!");
+readStream.on('error', (err) => {
+  console.error('Error while reading:', err);
+});
+```
+
+ For Writable Streams
+
+ `drain` → buffer is empty, safe to write more
+ `finish` → `.end()` has been called and all data flushed
+ `error` → error while writing
+
+```js
+const writeStream = fs.createWriteStream('output.txt');
+writeStream.on('finish', () => {
+  console.log('Writing completed');
+});
+writeStream.on('error', (err) => {
+  console.error('Error while writing:', err);
+});
+```
+
+✅ Error Handling Best Practice
+
+ Always add `.on('error')` for both readable and writable streams.
+ With `pipeline()`, error handling is automatic.
+
+---
+
+ § 7.6 Creating Custom Streams
+
+Sometimes you need a custom stream (not just file read/write).
+Node.js provides `stream` module classes to extend:
+
+ `Readable` → to create your own readable data source
+ `Writable` → to create your own writable sink
+ `Duplex` → to both read & write
+ `Transform` → to modify data
+
+---
+
+ 🔹 Custom Readable Stream
+
+```js
+const { Readable } = require('stream');
+
+class MyReadable extends Readable {
+  constructor(data, options) {
+    super(options);
+    this.data = data;
+  }
+
+  _read() {
+    if (this.data.length === 0) {
+      this.push(null); // No more data
+    } else {
+      this.push(this.data.shift()); // Send next chunk
+    }
+  }
 }
 
+// Example usage
+const myStream = new MyReadable(['Hello ', 'World!', '\n']);
+myStream.pipe(process.stdout); // prints: Hello World!
+```
 
 ---
 
- 🔹 § 5.2 Synchronous vs Asynchronous File Operations
+ 🔹 Custom Writable Stream
 
-Node.js provides two versions of most file system methods:
+```js
+const { Writable } = require('stream');
 
-1. Synchronous (Blocking)
-
-    Code execution waits until the operation completes.
-    Simple but can block the event loop.
-    Not recommended for production servers.
-
-2. Asynchronous (Non-blocking)
-
-    Uses callbacks or promises.
-    The event loop stays free → better performance.
-    Recommended for most use cases.
-
-Example:
-
-js
-const fs = require("fs");
-
-// Synchronous (Blocking)
-const data = fs.readFileSync("example.txt", "utf8");
-console.log("Sync Read:", data);
-
-// Asynchronous (Non-blocking)
-fs.readFile("example.txt", "utf8", (err, data) => {
-  if (err) throw err;
-  console.log("Async Read:", data);
-});
-
-
-👉 Engineering tip: Use async methods (`fs.promises` or callbacks) in production; sync is okay for scripts or initialization tasks.
-
----
-
- 🔹 § 5.3 Reading and Writing Files
-
- 1. Reading Files
-
- Async with callback:
-
-js
-fs.readFile("example.txt", "utf8", (err, data) => {
-  if (err) {
-    console.error("Error reading file:", err);
-    return;
-  }
-  console.log("File Content:", data);
-});
-
-
- Async with Promises:
-
-js
-const fsPromises = require("fs").promises;
-
-async function readFileExample() {
-  try {
-    const data = await fsPromises.readFile("example.txt", "utf8");
-    console.log("File Content:", data);
-  } catch (err) {
-    console.error("Error:", err);
+class MyWritable extends Writable {
+  _write(chunk, encoding, callback) {
+    console.log('Received:', chunk.toString());
+    callback();
   }
 }
-readFileExample();
 
-
- Sync version:
-
-js
-const data = fs.readFileSync("example.txt", "utf8");
-console.log("Sync Read:", data);
-
+// Example usage
+const myWritable = new MyWritable();
+myWritable.write('Hi there!\n');
+myWritable.end();
+```
 
 ---
 
- 2. Writing Files
+ 🔹 Custom Transform Stream
 
- Async (callback):
+```js
+const { Transform } = require('stream');
 
-js
-fs.writeFile("output.txt", "Hello, Node.js!", (err) => {
-  if (err) throw err;
-  console.log("File written successfully!");
-});
+class UpperCaseTransform extends Transform {
+  _transform(chunk, encoding, callback) {
+    // Convert chunk to uppercase
+    this.push(chunk.toString().toUpperCase());
+    callback();
+  }
+}
 
+// Example usage
+process.stdin
+  .pipe(new UpperCaseTransform())
+  .pipe(process.stdout);
+```
 
- Append to file:
-
-js
-fs.appendFile("output.txt", "\nAppended text", (err) => {
-  if (err) throw err;
-  console.log("Text appended!");
-});
-
-
- Sync version:
-
-js
-fs.writeFileSync("output.txt", "New content (overwrites old)");
-
+👉 Type something in the terminal → it outputs in UPPERCASE.
 
 ---
 
- 3. Streams for Large Files
+✅ Summary
 
-For very large files, streams are more memory-efficient:
-
-js
-const readStream = fs.createReadStream("bigfile.txt", "utf8");
-
-readStream.on("data", (chunk) => {
-  console.log("Received chunk:", chunk);
-});
-
-readStream.on("end", () => {
-  console.log("Finished reading");
-});
-
-
- Unlike `readFile()`, which loads the whole file into memory, streams process chunks progressively.
+ Pipe vs Pipeline → Both connect streams, but `pipeline()` has better error handling.
+ Stream Events → Handle `data`, `end`, `finish`, `error` for smooth flow.
+ Custom Streams → Extend `Readable`, `Writable`, `Duplex`, or `Transform` to build your own streaming logic.
 
 ---
 
-  Summary
-
- § 5.1 fs Module → Core module to work with files/directories.
- § 5.2 Sync vs Async → Async is preferred for servers; sync may block event loop.
- § 5.3 Reading & Writing Files → Use `readFile`, `writeFile`, `appendFile`, or streams for large files.
-
----
-
-👉 Do you want me to also include directory operations (creating, reading, deleting folders) in this section, or should we keep that for a later chapter?
+Would you like me to also prepare a real-world mini project (like a file compressor with error handling + custom logging stream) that combines pipe, events, and custom streams?
